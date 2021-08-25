@@ -1,0 +1,133 @@
+package Analizadores;
+import java_cup.runtime.*;
+import Arbol.*;
+import Datos.*;
+import java.util.ArrayList;
+
+
+parser code
+{:  
+    public static ArrayList<Arbol> lista = new ArrayList<Arbol>(); 
+    public static int contador=1;
+    public static int num=1;
+    public static ArrayList<ErrorA> errores = new ArrayList<ErrorA>();
+    public String[] firstLast(Nodo var, Nodo var2){
+        String firstLast[]= new String[2];
+        String last="";
+        String first="";
+        if (var.anulable) {
+            first=first+var.first+","+var2.first;
+            last= var2.last;
+        }else{
+            first=first+var.first;
+        }
+        if (var2.anulable) {
+            last= last+var.last+",";
+            last= last+var2.last;
+            
+        }else{
+            last= var2.last;
+        }
+        firstLast[0]=first;    
+        firstLast[1]=last;
+        return firstLast;      
+    }
+    //-----------------------------------------para errores sintacticos-------------------------------------------------------------------------------------------
+    public void syntax_error(Symbol s)
+    {
+        System.err.println("Error SINTACTICO en la Línea " + (s.right) +" Columna "+(s.left+1)+ ". Identificador "+s.value + " no reconocido. Se ha recuperado del error." );
+        ErrorA errorA;
+            if(errores.isEmpty()){
+            errorA = new ErrorA(0,"Sintactico","Encontrado identificador \""+s.value+"\" no reconocido", s.right, s.left+1);
+            }else{
+                errorA = new ErrorA(errores.size()+1,"Sintactico","Encontrado identificador \""+s.value+"\" no reconocido", s.right, s.left+1);
+            }
+     
+            errores.add(errorA);
+    }
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception
+    {
+        System.err.println("Error SINTACTICO en la Línea " + (s.right)+ " Columna "+(s.left+1)+". Identificador " +s.value + " no reconocido.");
+    }
+    //-------------------------------------------------------------------------------------------------------------------------------------------------------------
+:}
+
+action code {:
+:}
+
+terminal String letraexp, cadena, llavea, llavec, pyc, dsp, porcen, guion, punto;
+terminal String orr, mas, coma, conj, interrogacion, asterisco, mayor, id, entero;
+terminal String letra, casoa, casob, casoc, casod, caracteresp, caracter, oguion;
+
+non terminal INICIO, CONJ, CUCONJ, CASOD, LISTA, DECONJ, EXPRESION, DEXP, SIGNO;
+non terminal CONTENT, ENTRADA;
+non terminal Nodo CUERPOEXP;
+non terminal CEXP;
+
+precedence left punto;
+precedence left orr;
+
+start with INICIO;
+
+INICIO::= llavea CONJ EXPRESION porcen porcen ENTRADA llavec {:System.out.println("si jala!");:};
+
+CONJ ::=CONJ DECONJ
+        |DECONJ;
+
+DECONJ ::= conj dsp id guion mayor CUCONJ pyc;
+
+CUCONJ ::= LISTA
+            |casoa
+            |casob
+            |casoc
+            |CASOD;
+
+CASOD::= caracter oguion caracter;
+
+LISTA ::= LISTA coma entero
+        |LISTA coma letra
+        |LISTA coma caracter
+        |letra
+        |entero
+        |caracter;
+
+EXPRESION ::= EXPRESION DEXP
+            |DEXP;
+
+DEXP ::= id:Nom guion mayor CUERPOEXP:var pyc {: Nodo acept = new Nodo(null, null, "#", parser.contador, false, parser.num, String.valueOf(parser.num), String.valueOf(parser.num)); parser.contador++;  Nodo raiz = new Nodo(var, acept, ".", parser.contador, false, 0, parser.firstLast(var, acept)[0], parser.firstLast(var, acept)[1]);  parser.contador=1; parser.num=1; Arbol arbol = new Arbol(Nom, raiz); parser.lista.add(arbol);:};
+
+CUERPOEXP ::=  orr CUERPOEXP:var CUERPOEXP:var2     {:RESULT=new Nodo(var, var2, "\\|", parser.contador, false, 0, var.first+","+var2.first, var.last+","+var2.last); parser.contador++;:}
+            | punto CUERPOEXP:var CUERPOEXP:var2    {:RESULT=new Nodo(var, var2, ".", parser.contador, false, 0, parser.firstLast(var, var2)[0], parser.firstLast(var, var2)[1]); parser.contador++;:}
+            | asterisco CUERPOEXP:var               {:RESULT=new Nodo(var, null, "*", parser.contador, true, 0, var.first, var.last); parser.contador++;:}
+            | mas CUERPOEXP:var                     {:RESULT=new Nodo(var, null, "+", parser.contador, false, 0, var.first, var.last); parser.contador++;:}
+            | interrogacion CUERPOEXP:var           {:RESULT=new Nodo(var, null, "?", parser.contador, true, 0, var.first, var.last); parser.contador++;:}
+            | cadena:var1                           {:RESULT=new Nodo(null, null, var1, parser.contador, false, parser.num, String.valueOf(parser.num), String.valueOf(parser.num)); parser.contador++; parser.num++;:}                     
+            | caracteresp:var1                      {:RESULT=new Nodo(null, null, "\\"+var1, parser.contador, false, parser.num, String.valueOf(parser.num), String.valueOf(parser.num)); parser.contador++; parser.num++;:}                   
+            | llavea id:var1 llavec                {:RESULT=new Nodo(null, null, var1, parser.contador, false, parser.num, String.valueOf(parser.num), String.valueOf(parser.num)); parser.contador++; parser.num++;:};
+
+
+
+ENTRADA ::= ENTRADA CONTENT
+            | CONTENT;
+
+CONTENT::= id dsp cadena pyc;
+
+
+/* para los puntos colocar en parser
+String last="";
+                String first="";
+                if (var.anulable) {
+                    first=first+var.first;
+                    last= last+var.last;
+                }else{
+                    first=first+var.first;
+                }
+                if (var2.anulable) {
+                    last= last+var2.last;
+                    
+                }else{
+                    last= last+var2.last;
+                }
+
+
+*/
