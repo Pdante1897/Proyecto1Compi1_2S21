@@ -1,9 +1,9 @@
-package Analizadores;
+package Analizador1;
 
 public class Analizadores {
     public static void main(String[] args){
         try {
-            String ruta = "src/Analizadores/";
+            String ruta = "src/Analizador1/";
             String opcFlex[] = {ruta + "Lexico.jflex", "-d", ruta};
             jflex.Main.generate(opcFlex);
             String opcCUP[] = {"-destdir", ruta, "-parser", "parser", ruta + "Sintactico.cup"};

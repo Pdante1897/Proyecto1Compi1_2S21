@@ -1,0 +1,15 @@
+GenerarReporteEstadistico{
+	DefinirGlobales	{	
+		string firstReport = "Probabilidad general esperada";
+		double generalExpected = 0.8;
+		string secondReport = "Probabilidad general esperada variable 1";
+		double generalExpected2 = 0.2;
+	}
+    GraficaBarras{
+        Titulo: reporte1;
+        Ejex: [ "Probabilidad Esperada clase 1", "Probabilidad Obtenida Clase 1", var2, var22, var3, var33];
+        Valores: [ pe1, po1, pe2, po2, pe3, ${ PuntajeEspecifico, "archivo1.js", "clase", "clase3"} ];
+        TituloX: "Atributo";
+        TituloY: "Puntaje";
+}
+}

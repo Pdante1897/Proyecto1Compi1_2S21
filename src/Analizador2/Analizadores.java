@@ -1,4 +1,4 @@
-package Analizadores;
+package Analizador2;
 
 public class Analizadores {
     public static void main(String[] args){
